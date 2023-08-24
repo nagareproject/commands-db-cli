@@ -1,0 +1,2 @@
+[nagare.commands.db]
+cli = nagare.admin.commands_db_cli:CLI
