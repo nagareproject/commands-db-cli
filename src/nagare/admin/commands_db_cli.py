@@ -11,35 +11,9 @@ from litecli import main as litecli
 from mycli import main as mycli
 from nagare import commands
 from nagare.admin import command
+from nagare.services.database import Database
 from pgcli import main as pgcli
-
-COLORS = {
-    'completion-menu.completion.current': 'bg:#ffffff #000000',
-    'completion-menu.completion': 'bg:#008888 #ffffff',
-    'completion-menu.meta.completion.current': 'bg:#44aaaa #000000',
-    'completion-menu.meta.completion': 'bg:#448888 #ffffff',
-    'completion-menu.multi-column-meta': 'bg:#aaffff #000000',
-    'scrollbar.arrow': 'bg:#003333',
-    'scrollbar': 'bg:#00aaaa',
-    'selected': '#ffffff bg:#6666aa',
-    'search': '#ffffff bg:#4444aa',
-    'search.current': '#ffffff bg:#44aa44',
-    'bottom-toolbar': 'bg:#222222 #aaaaaa',
-    'bottom-toolbar.off': 'bg:#222222 #888888',
-    'bottom-toolbar.on': 'bg:#222222 #ffffff',
-    'search-toolbar': 'noinherit bold',
-    'search-toolbar.text': 'nobold',
-    'system-toolbar': 'noinherit bold',
-    'arg-toolbar': 'noinherit bold',
-    'arg-toolbar.text': 'nobold',
-    'bottom-toolbar.transaction.valid': 'bg:#222222 #00ff5f bold',
-    'bottom-toolbar.transaction.failed': 'bg:#222222 #ff005f bold',
-    # style classes for colored table output
-    'output.header': '#00ff5f bold',
-    'output.odd-row': '',
-    'output.even-row': '',
-    'output.null': '#808080',
-}
+from pygments.styles import STYLE_MAP
 
 
 class CLIConfig(dict):
@@ -49,89 +23,79 @@ class CLIConfig(dict):
     as_int = as_bool
 
 
-def create_lite_config(config_filename):
+def create_lite_config(config, colors, config_filename):
     return {
         'main': CLIConfig(
-            multi_line=True,
+            dict(
+                config,
+                key_bindings='emacs',
+                less_chatty=True,
+                show_bottom_toolbar=True,
+                autocompletion=True,
+                destructive_warning=True,
+                login_path_as_host=False,
+                auto_vertical_output=False,
+                log_file='default',
+                log_level='NONE',
+            )
+        ),
+        'colors': colors,
+    }
+
+
+def create_pg_config(config, colors, config_filename):
+    return {
+        'main': CLIConfig(
+            dict(
+                config,
+                show_bottom_toolbar=True,
+                destructive_warning='true',
+                log_file='default',
+                log_level='NONE',
+                auto_expand=True,
+                expand=False,
+                vi=False,
+                timing=True,
+                row_limit=1000,
+                max_field_width='500',
+                min_num_menu_lines=4,
+                multiline_continuation_char='',
+                on_error='STOP',
+                keyring=False,
+                smart_completion=True,
+                keyword_casing='auto',
+                casing_file=None,
+                generate_casing_file=False,
+                generate_aliases=False,
+                asterisk_column_order='table_order',
+                qualify_columns='if_more_than_one_table',
+                case_column_headers=False,
+                search_path_filter=False,
+                history_file='default',
+            )
+        ),
+        'data_formats': {'decimal': '', 'float': ''},
+        'colors': colors,
+    }
+
+
+def create_my_config(config, colors, config_filename, list_values=False):
+    main_config = CLIConfig(
+        dict(
             key_bindings='emacs',
-            table_format='ascii',
-            syntax_style='default',
+            timing=True,
+            beep_after_seconds=0,
             less_chatty=True,
-            show_bottom_toolbar=True,
-            wider_completion_menu=False,
-            autocompletion=True,
             destructive_warning=True,
             login_path_as_host=False,
             auto_vertical_output=False,
-            log_file='default',
+            log_file='',
             log_level='NONE',
-            prompt_continuation='-> ',
-            enable_pager=False,
-        ),
-        'colors': COLORS,
-    }
-
-
-def create_pg_config(config_filename):
-    return {
-        'main': CLIConfig(
-            multi_line=True,
-            table_format='ascii',
-            show_bottom_toolbar=True,
-            wider_completion_menu=False,
-            destructive_warning='true',
-            log_file='default',
-            log_level='NONE',
-            auto_expand=True,
-            expand=False,
-            vi=False,
-            timing=True,
-            row_limit=1000,
-            max_field_width='500',
-            min_num_menu_lines=4,
-            multiline_continuation_char='',
-            syntax_style='default',
-            on_error='STOP',
-            keyring=False,
             smart_completion=True,
-            enable_pager=False,
-            keyword_casing='auto',
-            casing_file=None,
-            generate_casing_file=False,
-            generate_aliases=False,
-            asterisk_column_order='table_order',
-            qualify_columns='if_more_than_one_table',
-            case_column_headers=False,
-            search_path_filter=False,
-            history_file='default',
-        ),
-        'data_formats': {'decimal': '', 'float': ''},
-        'colors': COLORS,
-    }
-
-
-def create_my_config(config_filename, list_values=False):
-    main_config = CLIConfig(
-        multi_line=True,
-        key_bindings='emacs',
-        timing=True,
-        beep_after_seconds=0,
-        table_format='ascii',
-        syntax_style='default',
-        less_chatty=True,
-        wider_completion_menu=False,
-        destructive_warning=True,
-        login_path_as_host=False,
-        auto_vertical_output=False,
-        log_file='',
-        log_level='NONE',
-        prompt_continuation='-> ',
-        smart_completion=True,
-        pager=None,
-        enable_pager=False,
+        )
     )
 
-    config = CLIConfig(main=main_config, colors=COLORS, alias_dsn=None)
+    config = CLIConfig(main=main_config, colors=colors, alias_dsn=None)
     config.filename = mycli.MyCli.system_config_files[0]
 
     return config
@@ -140,6 +104,53 @@ def create_my_config(config_filename, list_values=False):
 litecli.get_config = create_lite_config
 pgcli.get_config = create_pg_config
 mycli.read_config_files = create_my_config
+
+
+def create_spec():
+    table_formats = litecli.TabularOutputFormatter().supported_formats
+
+    return {
+        'cli': {
+            'activated': 'boolean(default=False)',
+            'wider_completion_menu': 'boolean(default=False, help="display the completions in several columns")',
+            'multi_line': 'boolean(default=True, help="if True, the statements must end by a semi-colon")',
+            'table_format': 'option({}, default="ascii")'.format(', '.join([f'"{t}"' for t in table_formats])),
+            'syntax_style': 'option({}, default="default")'.format(', '.join([f'"{t}"' for t in STYLE_MAP])),
+            'enable_pager': 'boolean(default=False)',
+            'pager': 'string(default="less -SRXF")',
+            'prompt_continuation': 'string(default="-> ")',
+            'colors': {
+                'completion-menu.completion.current': 'string(default="bg:#ffffff #000000")',
+                'completion-menu.completion': 'string(default="bg:#008888 #ffffff")',
+                'completion-menu.meta.completion.current': 'string(default="bg:#44aaaa #000000")',
+                'completion-menu.meta.completion': 'string(default="bg:#448888 #ffffff")',
+                'completion-menu.multi-column-meta': 'string(default="bg:#aaffff #000000")',
+                'scrollbar.arrow': 'string(default="bg:#003333")',
+                'scrollbar': 'string(default="bg:#00aaaa")',
+                'selected': 'string(default="#ffffff bg:#6666aa")',
+                'search': 'string(default="#ffffff bg:#4444aa")',
+                'search.current': 'string(default="#ffffff bg:#44aa44")',
+                'bottom-toolbar': 'string(default="bg:#222222 #aaaaaa")',
+                'bottom-toolbar.off': 'string(default="bg:#222222 #888888")',
+                'bottom-toolbar.on': 'string(default="bg:#222222 #ffffff")',
+                'search-toolbar': 'string(default="noinherit bold")',
+                'search-toolbar.text': 'string(default="nobold")',
+                'system-toolbar': 'string(default="noinherit bold")',
+                'arg-toolbar': 'string(default="noinherit bold")',
+                'arg-toolbar.text': 'string(default="nobold")',
+                'bottom-toolbar.transaction.valid': 'string(default="bg:#222222 #00ff5f bold")',
+                'bottom-toolbar.transaction.failed': 'string(default="bg:#222222 #ff005f bold")',
+                # style classes for colored table output
+                'output.header': 'string(default="#00ff5f bold")',
+                'output.odd-row': 'string(default="")',
+                'output.even-row': 'string(default="")',
+                'output.null': 'string(default="#808080")',
+            },
+        }
+    }
+
+
+Database.CONFIG_SPEC.update(create_spec())
 
 
 class CLI(command.Command):
@@ -240,7 +251,7 @@ class CLI(command.Command):
             password_file=None,
         )
 
-    def run(self, database_service, db=None, **params):
+    def run(self, database_service, db=None, list_databases=False):
         metadatas = {metadata.name: metadata for metadata in database_service.metadatas}
 
         if not db:
@@ -259,5 +270,12 @@ class CLI(command.Command):
         else:
             raise commands.ArgumentError('No CLI available for {} database'.format(engine.url.drivername))
 
-        cli(engine.url, **params)
+        config = database_service.plugin_config['cli']
+        colors = config.pop('colors')
+
+        litecli.get_config = lambda *args, **kw: create_lite_config(config, colors, *args, **kw)
+        pgcli.get_config = lambda *args, **kw: create_pg_config(config, colors, *args, **kw)
+        mycli.read_config_files = lambda *args, **kw: create_my_config(config, colors, *args, **kw)
+
+        cli(engine.url, list_databases)
         return 0

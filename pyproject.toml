@@ -73,7 +73,7 @@ select = [
     'W',
     'YTT',
 ]
-ignore = ['COM812', 'D10']
+ignore = ['COM812', 'D10', 'C408']
 line-length = 120
 src = ['src']
 
