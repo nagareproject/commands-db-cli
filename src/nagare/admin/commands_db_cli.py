@@ -7,6 +7,9 @@
 # this distribution.
 # --
 
+import os
+import tempfile
+
 from litecli import main as litecli
 from mycli import main as mycli
 from nagare import commands
@@ -82,6 +85,7 @@ def create_pg_config(config, colors, config_filename):
 def create_my_config(config, colors, config_filename, list_values=False):
     main_config = CLIConfig(
         dict(
+            config,
             key_bindings='emacs',
             timing=True,
             beep_after_seconds=0,
@@ -182,12 +186,12 @@ class CLI(command.Command):
     @staticmethod
     def run_pg_cli(database_uri, list_databases):
         pgcli.cli.callback(
-            dbname=database_uri.database,
-            username_opt=database_uri.username,
-            host=database_uri.host,
-            port=database_uri.port,
+            dbname=database_uri.render_as_string(hide_password=False),
+            username_opt=None,
+            host=None,
+            port=None,
             prompt_passwd=False,
-            never_prompt=True,
+            never_prompt=False,
             single_connection=False,
             dbname_opt=None,
             username=None,
@@ -207,49 +211,56 @@ class CLI(command.Command):
 
     @staticmethod
     def run_my_cli(database_uri, list_databases):
-        mycli.cli.callback(
-            database=database_uri.database,
-            user=database_uri.username,
-            host=database_uri.host,
-            port=database_uri.port,
-            socket='',
-            password=database_uri.password,
-            execute=r'\l' if list_databases else None,
-            dbname=None,
-            version=False,
-            verbose=True,
-            prompt='\\t \\u@\\h/\\d> ',
-            logfile=None,
-            defaults_group_suffix=None,
-            defaults_file=None,
-            login_path=None,
-            auto_vertical_output=None,
-            local_infile=None,
-            ssl_enable=False,
-            ssl_ca=None,
-            ssl_capath=None,
-            ssl_cert=None,
-            ssl_key=None,
-            ssl_cipher=None,
-            ssl_verify_server_cert=False,
-            table=True,
-            csv=False,
-            warn=None,
-            myclirc='',
-            dsn=None,
-            list_dsn=False,
-            ssh_user=None,
-            ssh_host=None,
-            ssh_port=None,
-            ssh_password=None,
-            ssh_key_filename=None,
-            list_ssh_config=None,
-            ssh_config_path=None,
-            ssh_config_host=None,
-            init_command=None,
-            charset=None,
-            password_file=None,
-        )
+        password_file, password_filename = tempfile.mkstemp()
+        try:
+            os.write(password_file, os.environ.get('MYSQLPASSWORD', '').encode('utf-8'))
+
+            mycli.cli.callback(
+                database=database_uri.render_as_string(hide_password=False),
+                user=None,
+                host=None,
+                port=None,
+                socket='',
+                password=None,
+                execute=r'\l' if list_databases else None,
+                dbname=None,
+                version=False,
+                verbose=True,
+                prompt='\\t \\u@\\h/\\d> ',
+                logfile=None,
+                defaults_group_suffix=None,
+                defaults_file=None,
+                login_path=None,
+                auto_vertical_output=None,
+                local_infile=None,
+                ssl_enable=False,
+                ssl_ca=None,
+                ssl_capath=None,
+                ssl_cert=None,
+                ssl_key=None,
+                ssl_cipher=None,
+                ssl_verify_server_cert=False,
+                table=True,
+                csv=False,
+                warn=None,
+                myclirc='',
+                dsn=None,
+                list_dsn=False,
+                ssh_user=None,
+                ssh_host=None,
+                ssh_port=None,
+                ssh_password=None,
+                ssh_key_filename=None,
+                list_ssh_config=None,
+                ssh_config_path=None,
+                ssh_config_host=None,
+                init_command=None,
+                charset=None,
+                password_file=password_filename,
+            )
+        finally:
+            os.close(password_file)
+            os.remove(password_filename)
 
     def run(self, database_service, db=None, list_databases=False):
         metadatas = {metadata.name: metadata for metadata in database_service.metadatas}
