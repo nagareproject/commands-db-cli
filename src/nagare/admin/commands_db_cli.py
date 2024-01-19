@@ -10,20 +10,21 @@
 import os
 import tempfile
 
-from litecli import main as litecli
 from mycli import main as mycli
+from pgcli import main as pgcli
+from litecli import main as litecli
+from pygments.styles import STYLE_MAP
+
 from nagare import commands
 from nagare.admin import command
 from nagare.services.database import Database
-from pgcli import main as pgcli
-from pygments.styles import STYLE_MAP
 
 
 class CLIConfig(dict):
     def as_bool(self, name):
         return self[name]
 
-    as_int = as_bool
+    as_list = as_int = as_bool
 
 
 def create_lite_config(config, colors, config_filename):
@@ -52,7 +53,15 @@ def create_pg_config(config, colors, config_filename):
             dict(
                 config,
                 show_bottom_toolbar=True,
-                destructive_warning='true',
+                destructive_warning=[
+                    'drop',
+                    'shutdown',
+                    'delete',
+                    'truncate',
+                    'alter',
+                    'update',
+                    'unconditional_update',
+                ],
                 log_file='default',
                 log_level='NONE',
                 auto_expand=True,
@@ -75,6 +84,11 @@ def create_pg_config(config, colors, config_filename):
                 case_column_headers=False,
                 search_path_filter=False,
                 history_file='default',
+                auto_retry_closed_connection=False,
+                destructive_warning_restarts_connection=False,
+                destructive_statements_require_transaction=False,
+                always_use_single_connection=False,
+                alias_map_file=None,
             )
         ),
         'data_formats': {'decimal': '', 'float': ''},
