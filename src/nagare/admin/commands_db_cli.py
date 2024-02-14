@@ -200,7 +200,7 @@ class CLI(command.Command):
     @staticmethod
     def run_pg_cli(database_uri, list_databases):
         pgcli.cli.callback(
-            dbname=database_uri.render_as_string(hide_password=False),
+            dbname=database_uri.set(database_uri.get_backend_name()).render_as_string(hide_password=False),
             username_opt=None,
             host=None,
             port=None,
