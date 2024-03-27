@@ -128,47 +128,44 @@ def create_spec():
     table_formats = litecli.TabularOutputFormatter().supported_formats
 
     return {
-        'cli': {
-            'activated': 'boolean(default=False)',
-            'wider_completion_menu': 'boolean(default=False, help="display the completions in several columns")',
-            'multi_line': 'boolean(default=True, help="if True, the statements must end by a semi-colon")',
-            'table_format': 'option({}, default="ascii")'.format(', '.join([f'"{t}"' for t in table_formats])),
-            'syntax_style': 'option({}, default="default")'.format(', '.join([f'"{t}"' for t in STYLE_MAP])),
-            'enable_pager': 'boolean(default=False)',
-            'pager': 'string(default="less -SRXF")',
-            'prompt_continuation': 'string(default="-> ")',
-            'colors': {
-                'completion-menu.completion.current': 'string(default="bg:#ffffff #000000")',
-                'completion-menu.completion': 'string(default="bg:#008888 #ffffff")',
-                'completion-menu.meta.completion.current': 'string(default="bg:#44aaaa #000000")',
-                'completion-menu.meta.completion': 'string(default="bg:#448888 #ffffff")',
-                'completion-menu.multi-column-meta': 'string(default="bg:#aaffff #000000")',
-                'scrollbar.arrow': 'string(default="bg:#003333")',
-                'scrollbar': 'string(default="bg:#00aaaa")',
-                'selected': 'string(default="#ffffff bg:#6666aa")',
-                'search': 'string(default="#ffffff bg:#4444aa")',
-                'search.current': 'string(default="#ffffff bg:#44aa44")',
-                'bottom-toolbar': 'string(default="bg:#222222 #aaaaaa")',
-                'bottom-toolbar.off': 'string(default="bg:#222222 #888888")',
-                'bottom-toolbar.on': 'string(default="bg:#222222 #ffffff")',
-                'search-toolbar': 'string(default="noinherit bold")',
-                'search-toolbar.text': 'string(default="nobold")',
-                'system-toolbar': 'string(default="noinherit bold")',
-                'arg-toolbar': 'string(default="noinherit bold")',
-                'arg-toolbar.text': 'string(default="nobold")',
-                'bottom-toolbar.transaction.valid': 'string(default="bg:#222222 #00ff5f bold")',
-                'bottom-toolbar.transaction.failed': 'string(default="bg:#222222 #ff005f bold")',
-                # style classes for colored table output
-                'output.header': 'string(default="#00ff5f bold")',
-                'output.odd-row': 'string(default="")',
-                'output.even-row': 'string(default="")',
-                'output.null': 'string(default="#808080")',
-            },
-        }
+        'wider_completion_menu': 'boolean(default=False, help="display the completions in several columns")',
+        'multi_line': 'boolean(default=True, help="if True, the statements must end by a semi-colon")',
+        'table_format': 'option({}, default="ascii")'.format(', '.join([f'"{t}"' for t in table_formats])),
+        'syntax_style': 'option({}, default="default")'.format(', '.join([f'"{t}"' for t in STYLE_MAP])),
+        'enable_pager': 'boolean(default=False)',
+        'pager': 'string(default="less -SRXF")',
+        'prompt_continuation': 'string(default="-> ")',
+        'colors': {
+            'completion-menu.completion.current': 'string(default="bg:#ffffff #000000")',
+            'completion-menu.completion': 'string(default="bg:#008888 #ffffff")',
+            'completion-menu.meta.completion.current': 'string(default="bg:#44aaaa #000000")',
+            'completion-menu.meta.completion': 'string(default="bg:#448888 #ffffff")',
+            'completion-menu.multi-column-meta': 'string(default="bg:#aaffff #000000")',
+            'scrollbar.arrow': 'string(default="bg:#003333")',
+            'scrollbar': 'string(default="bg:#00aaaa")',
+            'selected': 'string(default="#ffffff bg:#6666aa")',
+            'search': 'string(default="#ffffff bg:#4444aa")',
+            'search.current': 'string(default="#ffffff bg:#44aa44")',
+            'bottom-toolbar': 'string(default="bg:#222222 #aaaaaa")',
+            'bottom-toolbar.off': 'string(default="bg:#222222 #888888")',
+            'bottom-toolbar.on': 'string(default="bg:#222222 #ffffff")',
+            'search-toolbar': 'string(default="noinherit bold")',
+            'search-toolbar.text': 'string(default="nobold")',
+            'system-toolbar': 'string(default="noinherit bold")',
+            'arg-toolbar': 'string(default="noinherit bold")',
+            'arg-toolbar.text': 'string(default="nobold")',
+            'bottom-toolbar.transaction.valid': 'string(default="bg:#222222 #00ff5f bold")',
+            'bottom-toolbar.transaction.failed': 'string(default="bg:#222222 #ff005f bold")',
+            # style classes for colored table output
+            'output.header': 'string(default="#00ff5f bold")',
+            'output.odd-row': 'string(default="")',
+            'output.even-row': 'string(default="")',
+            'output.null': 'string(default="#808080")',
+        },
     }
 
 
-Database.CONFIG_SPEC.update(create_spec())
+Database.CONFIG_SPEC['cli'].update(create_spec())
 
 
 class CLI(command.Command):
