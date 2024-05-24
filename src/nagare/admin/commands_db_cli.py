@@ -210,6 +210,7 @@ class CLI(command.Command):
             pgclirc=None,
             dsn='',
             row_limit=None,
+            application_name='nagare',
             less_chatty=True,
             prompt='PostgreSQL \\u@\\h/\\d> ',
             prompt_dsn='DSN',
@@ -218,6 +219,7 @@ class CLI(command.Command):
             list_dsn=False,
             warn=False,
             ssh_tunnel=None,
+            log_file=None,
         )
 
     @staticmethod
