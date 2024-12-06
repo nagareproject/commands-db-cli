@@ -19,7 +19,7 @@ description = 'Nagare database CLI'
 authors = [{ name = 'Net-ng' }, { email = 'contact@net-ng.com' }]
 license = { file = 'LICENSE.txt' }
 requires-python = '>=3.7'
-dependencies = ['litecli', 'pgcli', 'mycli', 'nagare-services-database']
+dependencies = ['litecli==1.13.2', 'pgcli==4.1.0', 'mycli==1.28.0', 'nagare-services-database']
 
 [project.readme]
 file = 'README.rst'
