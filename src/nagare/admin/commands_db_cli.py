@@ -1,5 +1,5 @@
 # --
-# Copyright (c) 2008-2024 Net-ng.
+# Copyright (c) 2014-2025 Net-ng.
 # All rights reserved.
 #
 # This software is licensed under the BSD License, as described in
@@ -176,7 +176,7 @@ class CLI(command.Command):
         parser.add_argument('--db', help='name of the db section')
         parser.add_argument('-l', '--list', action='store_true', dest='list_databases', help='list the databases')
 
-        super(CLI, self).set_arguments(parser)
+        super().set_arguments(parser)
 
     @staticmethod
     def run_lite_cli(database_uri, list_databases):
